@@ -29,6 +29,49 @@ h1 {
   font-size: clamp(1.4rem, 2vw, 2rem);
 }
 
+.setup-screen {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.setup-text {
+  margin: 0;
+  color: #374151;
+}
+
+.setup-form {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.setup-label {
+  font-weight: 600;
+  color: #374151;
+}
+
+#tempoMedio {
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 0.8rem;
+  font-size: 1rem;
+}
+
+.erro {
+  margin: 0;
+  padding: 0.65rem;
+  border-radius: 8px;
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.setup-resumo {
+  margin: 0;
+  color: #4b5563;
+  font-size: 0.92rem;
+}
+
 .status-card {
   padding: 1rem;
   border-radius: 12px;
@@ -61,7 +104,7 @@ h1 {
 }
 
 .substatus {
-  margin: 0;
+  margin: 0 0 0.5rem;
   color: #374151;
 }
 
