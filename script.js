@@ -75,6 +75,14 @@ function sortearDuracaoMs() {
   return minutos * 60 * 1000;
 }
 
+function normalizarValorMinutos(valor) {
+  if (!Number.isFinite(valor)) {
+    return null;
+  }
+
+  return Math.floor(valor);
+}
+
 function mostrarErroIntervalos(mensagem) {
   erroIntervalos.textContent = mensagem;
   erroIntervalos.classList.remove('hidden');
@@ -97,7 +105,10 @@ function criarItemIntervalo(minutos) {
   botaoRemover.className = 'btn intervalo-remover';
   botaoRemover.textContent = 'Remover';
   botaoRemover.addEventListener('click', () => {
-    intervalosPersonalizados = intervalosPersonalizados.filter((valor) => valor !== minutos);
+    const indice = intervalosPersonalizados.indexOf(minutos);
+    if (indice !== -1) {
+      intervalosPersonalizados.splice(indice, 1);
+    }
     atualizarListaIntervalos();
     atualizarResumoConfig();
   });
@@ -140,13 +151,12 @@ function atualizarResumoConfig() {
 
 function adicionarIntervalo() {
   const valor = Number(intervaloNovoInput.value);
+  const valorNormalizado = normalizarValorMinutos(valor);
 
-  if (!Number.isFinite(valor)) {
+  if (valorNormalizado === null) {
     mostrarErroIntervalos('Informe um intervalo válido em minutos.');
     return;
   }
-
-  const valorNormalizado = Math.floor(valor);
 
   if (valorNormalizado < MIN_MINUTOS_ABSOLUTO || valorNormalizado > MAX_MINUTOS_ABSOLUTO) {
     mostrarErroIntervalos(
@@ -169,14 +179,14 @@ function adicionarIntervalo() {
 }
 
 function limparTimer() {
-  if (timerId) {
+  if (timerId !== null) {
     clearTimeout(timerId);
     timerId = null;
   }
 }
 
 function limparContagem() {
-  if (countdownId) {
+  if (countdownId !== null) {
     clearInterval(countdownId);
     countdownId = null;
   }
@@ -344,6 +354,14 @@ function configurarTempoMedio(evento) {
 formConfig.addEventListener('submit', configurarTempoMedio);
 tempoMedioInput.addEventListener('input', atualizarPreviewFaixa);
 btnAdicionarIntervalo.addEventListener('click', adicionarIntervalo);
+intervaloNovoInput.addEventListener('keydown', (evento) => {
+  if (evento.key !== 'Enter') {
+    return;
+  }
+
+  evento.preventDefault();
+  adicionarIntervalo();
+});
 btnAtivar.addEventListener('click', ativar);
 btnPararContinuar.addEventListener('click', pararMusicaEContinuar);
 btnDesativar.addEventListener('click', desativar);
