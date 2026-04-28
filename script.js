@@ -222,6 +222,11 @@ function atualizarStatusPrincipal(texto, classe) {
   statusPrincipal.classList.add(classe);
 }
 
+function atualizarEstadoBotoes() {
+  btnAtivar.disabled = ativo;
+  btnPararContinuar.disabled = !(ativo && emDesafio);
+}
+
 function iniciarCicloOculto() {
   if (!ativo || emDesafio) {
     return;
@@ -233,7 +238,7 @@ function iniciarCicloOculto() {
   atualizarStatusPrincipal('Ativo', 'status-on');
   subStatus.textContent = 'Próximo estímulo: surpresa.';
   alertaDesafio.classList.add('hidden');
-  btnPararContinuar.disabled = true;
+  atualizarEstadoBotoes();
 
   const duracaoMs = sortearDuracaoMs();
   proximoDesafioEm = Date.now() + duracaoMs;
@@ -252,7 +257,7 @@ async function dispararDesafio() {
   atualizarStatusPrincipal('Desafio!', 'status-challenge');
   subStatus.textContent = 'Abra o outro app e faça o ciclo.';
   alertaDesafio.classList.remove('hidden');
-  btnPararContinuar.disabled = false;
+  atualizarEstadoBotoes();
 
   try {
     alarme.currentTime = 0;
@@ -264,12 +269,13 @@ async function dispararDesafio() {
 }
 
 function ativar() {
-  if (!tempoMedioMinutos || (ativo && !emDesafio)) {
+  if (!tempoMedioMinutos || ativo) {
     return;
   }
 
   ativo = true;
   emDesafio = false;
+  atualizarEstadoBotoes();
   iniciarCicloOculto();
 }
 
@@ -297,7 +303,7 @@ function desativar() {
   atualizarStatusPrincipal('Desligado', 'status-off');
   subStatus.textContent = 'Cronômetro desligado.';
   alertaDesafio.classList.add('hidden');
-  btnPararContinuar.disabled = true;
+  atualizarEstadoBotoes();
 }
 
 function voltarParaConfiguracao() {
@@ -319,8 +325,8 @@ function configurarTempoMedio(evento) {
 
   const valor = Number(tempoMedioInput.value);
 
-  if (!Number.isFinite(valor) || valor < MIN_MINUTOS_ABSOLUTO) {
-    erroConfig.textContent = `O tempo médio precisa ser de pelo menos ${MIN_MINUTOS_ABSOLUTO} minutos.`;
+  if (!Number.isFinite(valor) || valor < MIN_MINUTOS_ABSOLUTO || valor > MAX_MINUTOS_ABSOLUTO) {
+    erroConfig.textContent = `O tempo médio precisa estar entre ${MIN_MINUTOS_ABSOLUTO} e ${MAX_MINUTOS_ABSOLUTO} minutos.`;
     erroConfig.classList.remove('hidden');
     return;
   }
@@ -344,6 +350,7 @@ btnDesativar.addEventListener('click', desativar);
 btnReconfigurar.addEventListener('click', voltarParaConfiguracao);
 
 atualizarPreviewFaixa();
+atualizarEstadoBotoes();
 
 window.addEventListener('beforeunload', () => {
   limparTimer();
