@@ -1,4 +1,4 @@
-# Hiperfoco em Medicina
+# TIMER
 
 Aplicativo estático em HTML/CSS/JS com cronômetro oculto para estímulos aleatórios.
 
