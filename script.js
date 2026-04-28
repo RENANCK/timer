@@ -1,9 +1,11 @@
 const MIN_MINUTOS_ABSOLUTO = 4;
+const MAX_MINUTOS_ABSOLUTO = 60;
 
 const telaInicial = document.getElementById('telaInicial');
 const painelPrincipal = document.getElementById('painelPrincipal');
 const formConfig = document.getElementById('formConfig');
 const tempoMedioInput = document.getElementById('tempoMedio');
+const faixaPreview = document.getElementById('faixaPreview');
 const erroConfig = document.getElementById('erroConfig');
 const configResumo = document.getElementById('configResumo');
 
@@ -28,9 +30,31 @@ let proximoDesafioEm = null;
 const CONTAGEM_FINAL_SEGUNDOS = 2 * 60;
 
 function obterFaixaSorteio() {
-  const minimo = MIN_MINUTOS_ABSOLUTO;
-  const maximo = Math.max(MIN_MINUTOS_ABSOLUTO, tempoMedioMinutos * 2 - MIN_MINUTOS_ABSOLUTO);
-  return { minimo, maximo };
+  return calcularFaixaPorMedia(tempoMedioMinutos);
+}
+
+function calcularFaixaPorMedia(mediaMinutos) {
+  const mediaNormalizada = Math.max(MIN_MINUTOS_ABSOLUTO, Math.floor(mediaMinutos));
+  const maximoCalculado = Math.max(MIN_MINUTOS_ABSOLUTO, mediaNormalizada * 2 - MIN_MINUTOS_ABSOLUTO);
+  return {
+    minimo: MIN_MINUTOS_ABSOLUTO,
+    maximo: Math.min(MAX_MINUTOS_ABSOLUTO, maximoCalculado),
+  };
+}
+
+function atualizarPreviewFaixa() {
+  if (!faixaPreview) {
+    return;
+  }
+
+  const valor = Number(tempoMedioInput.value);
+  if (!Number.isFinite(valor) || valor < MIN_MINUTOS_ABSOLUTO) {
+    faixaPreview.textContent = `Faixa estimada: mínimo de ${MIN_MINUTOS_ABSOLUTO} minutos.`;
+    return;
+  }
+
+  const { minimo, maximo } = calcularFaixaPorMedia(valor);
+  faixaPreview.textContent = `Faixa estimada: ${minimo} a ${maximo} minutos.`;
 }
 
 function sortearDuracaoMs() {
@@ -195,9 +219,12 @@ function configurarTempoMedio(evento) {
 }
 
 formConfig.addEventListener('submit', configurarTempoMedio);
+tempoMedioInput.addEventListener('input', atualizarPreviewFaixa);
 btnAtivar.addEventListener('click', ativar);
 btnPararContinuar.addEventListener('click', pararMusicaEContinuar);
 btnDesativar.addEventListener('click', desativar);
+
+atualizarPreviewFaixa();
 
 window.addEventListener('beforeunload', () => {
   limparTimer();
