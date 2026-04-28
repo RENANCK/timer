@@ -8,24 +8,39 @@
   </head>
   <body>
     <main class="app" aria-live="polite">
-      <h1>TIMER</h1>
+      <section id="telaInicial" class="setup-screen">
+        <h1>TIMER</h1>
+        <p class="setup-text">Defina o tempo médio em minutos para iniciar o cronômetro.</p>
 
-      <section class="status-card">
-        <p class="label">Status</p>
-        <p id="statusPrincipal" class="status-value status-off">Desligado</p>
-        <p id="subStatus" class="substatus">Cronômetro desligado.</p>
+        <form id="formConfig" class="setup-form">
+          <label for="tempoMedio" class="setup-label">Tempo médio (mínimo: 4 min)</label>
+          <input id="tempoMedio" type="number" min="4" step="1" value="10" required />
+          <p id="erroConfig" class="erro hidden" role="alert"></p>
+          <button class="btn btn-primary" type="submit">Começar</button>
+        </form>
       </section>
 
-      <section id="alertaDesafio" class="alerta hidden" role="alert">
-        <p>Abra o outro app e faça o ciclo.</p>
-      </section>
+      <section id="painelPrincipal" class="hidden">
+        <h1>TIMER</h1>
 
-      <section class="actions">
-        <button id="btnAtivar" class="btn btn-primary" type="button">Ativar</button>
-        <button id="btnPararContinuar" class="btn" type="button" disabled>
-          Parar música e continuar
-        </button>
-        <button id="btnDesativar" class="btn btn-danger" type="button">Desativar</button>
+        <section class="status-card">
+          <p class="label">Status</p>
+          <p id="statusPrincipal" class="status-value status-off">Desligado</p>
+          <p id="subStatus" class="substatus">Cronômetro desligado.</p>
+          <p id="configResumo" class="setup-resumo"></p>
+        </section>
+
+        <section id="alertaDesafio" class="alerta hidden" role="alert">
+          <p>Abra o outro app e faça o ciclo.</p>
+        </section>
+
+        <section class="actions">
+          <button id="btnAtivar" class="btn btn-primary" type="button">Ativar</button>
+          <button id="btnPararContinuar" class="btn" type="button" disabled>
+            Parar música e continuar
+          </button>
+          <button id="btnDesativar" class="btn btn-danger" type="button">Desativar</button>
+        </section>
       </section>
 
       <audio id="alarme" src="assets/alarme.mp3" preload="auto"></audio>

@@ -1,5 +1,11 @@
-const MIN_MINUTOS = 10;
-const MAX_MINUTOS = 45;
+const MIN_MINUTOS_ABSOLUTO = 4;
+
+const telaInicial = document.getElementById('telaInicial');
+const painelPrincipal = document.getElementById('painelPrincipal');
+const formConfig = document.getElementById('formConfig');
+const tempoMedioInput = document.getElementById('tempoMedio');
+const erroConfig = document.getElementById('erroConfig');
+const configResumo = document.getElementById('configResumo');
 
 const statusPrincipal = document.getElementById('statusPrincipal');
 const subStatus = document.getElementById('subStatus');
@@ -15,9 +21,17 @@ alarme.loop = true;
 let timerId = null;
 let ativo = false;
 let emDesafio = false;
+let tempoMedioMinutos = null;
+
+function obterFaixaSorteio() {
+  const minimo = MIN_MINUTOS_ABSOLUTO;
+  const maximo = Math.max(MIN_MINUTOS_ABSOLUTO, tempoMedioMinutos * 2 - MIN_MINUTOS_ABSOLUTO);
+  return { minimo, maximo };
+}
 
 function sortearDuracaoMs() {
-  const minutos = Math.floor(Math.random() * (MAX_MINUTOS - MIN_MINUTOS + 1)) + MIN_MINUTOS;
+  const { minimo, maximo } = obterFaixaSorteio();
+  const minutos = Math.floor(Math.random() * (maximo - minimo + 1)) + minimo;
   return minutos * 60 * 1000;
 }
 
@@ -71,7 +85,7 @@ async function dispararDesafio() {
 }
 
 function ativar() {
-  if (ativo && !emDesafio) {
+  if (!tempoMedioMinutos || (ativo && !emDesafio)) {
     return;
   }
 
@@ -106,6 +120,30 @@ function desativar() {
   btnPararContinuar.disabled = true;
 }
 
+function configurarTempoMedio(evento) {
+  evento.preventDefault();
+
+  const valor = Number(tempoMedioInput.value);
+
+  if (!Number.isFinite(valor) || valor < MIN_MINUTOS_ABSOLUTO) {
+    erroConfig.textContent = `O tempo médio precisa ser de pelo menos ${MIN_MINUTOS_ABSOLUTO} minutos.`;
+    erroConfig.classList.remove('hidden');
+    return;
+  }
+
+  tempoMedioMinutos = Math.floor(valor);
+  const { minimo, maximo } = obterFaixaSorteio();
+
+  configResumo.textContent = `Tempo médio configurado: ${tempoMedioMinutos} min (ciclos aleatórios entre ${minimo} e ${maximo} min).`;
+  erroConfig.classList.add('hidden');
+
+  telaInicial.classList.add('hidden');
+  painelPrincipal.classList.remove('hidden');
+
+  desativar();
+}
+
+formConfig.addEventListener('submit', configurarTempoMedio);
 btnAtivar.addEventListener('click', ativar);
 btnPararContinuar.addEventListener('click', pararMusicaEContinuar);
 btnDesativar.addEventListener('click', desativar);
