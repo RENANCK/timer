@@ -19,9 +19,13 @@ const alarme = document.getElementById('alarme');
 alarme.loop = true;
 
 let timerId = null;
+let countdownId = null;
 let ativo = false;
 let emDesafio = false;
 let tempoMedioMinutos = null;
+let proximoDesafioEm = null;
+
+const CONTAGEM_FINAL_SEGUNDOS = 2 * 60;
 
 function obterFaixaSorteio() {
   const minimo = MIN_MINUTOS_ABSOLUTO;
@@ -42,6 +46,47 @@ function limparTimer() {
   }
 }
 
+function limparContagem() {
+  if (countdownId) {
+    clearInterval(countdownId);
+    countdownId = null;
+  }
+
+  proximoDesafioEm = null;
+}
+
+function formatarSegundosEmMinutos(segundosTotais) {
+  const minutos = Math.floor(segundosTotais / 60)
+    .toString()
+    .padStart(2, '0');
+  const segundos = Math.floor(segundosTotais % 60)
+    .toString()
+    .padStart(2, '0');
+
+  return `${minutos}:${segundos}`;
+}
+
+function atualizarContagemRegressivaFinal() {
+  if (!ativo || emDesafio || !proximoDesafioEm) {
+    return;
+  }
+
+  const restanteMs = proximoDesafioEm - Date.now();
+  const restanteSegundos = Math.ceil(restanteMs / 1000);
+
+  if (restanteSegundos <= 0) {
+    limparContagem();
+    return;
+  }
+
+  if (restanteSegundos <= CONTAGEM_FINAL_SEGUNDOS) {
+    subStatus.textContent = `Faltam ${formatarSegundosEmMinutos(restanteSegundos)} para o próximo estímulo.`;
+    return;
+  }
+
+  subStatus.textContent = 'Próximo estímulo: surpresa.';
+}
+
 function atualizarStatusPrincipal(texto, classe) {
   statusPrincipal.textContent = texto;
   statusPrincipal.classList.remove('status-off', 'status-on', 'status-challenge');
@@ -54,6 +99,7 @@ function iniciarCicloOculto() {
   }
 
   limparTimer();
+  limparContagem();
 
   atualizarStatusPrincipal('Ativo', 'status-on');
   subStatus.textContent = 'Próximo estímulo: surpresa.';
@@ -61,7 +107,10 @@ function iniciarCicloOculto() {
   btnPararContinuar.disabled = true;
 
   const duracaoMs = sortearDuracaoMs();
+  proximoDesafioEm = Date.now() + duracaoMs;
   timerId = setTimeout(dispararDesafio, duracaoMs);
+  atualizarContagemRegressivaFinal();
+  countdownId = setInterval(atualizarContagemRegressivaFinal, 1000);
 }
 
 async function dispararDesafio() {
@@ -70,6 +119,7 @@ async function dispararDesafio() {
   }
 
   emDesafio = true;
+  limparContagem();
   atualizarStatusPrincipal('Desafio!', 'status-challenge');
   subStatus.textContent = 'Abra o outro app e faça o ciclo.';
   alertaDesafio.classList.remove('hidden');
@@ -110,6 +160,7 @@ function desativar() {
   emDesafio = false;
 
   limparTimer();
+  limparContagem();
 
   alarme.pause();
   alarme.currentTime = 0;
@@ -150,5 +201,6 @@ btnDesativar.addEventListener('click', desativar);
 
 window.addEventListener('beforeunload', () => {
   limparTimer();
+  limparContagem();
   alarme.pause();
 });
