@@ -8,6 +8,9 @@ const tempoMedioInput = document.getElementById('tempoMedio');
 const faixaPreview = document.getElementById('faixaPreview');
 const erroConfig = document.getElementById('erroConfig');
 const configResumo = document.getElementById('configResumo');
+const intervaloMinimoInput = document.getElementById('intervaloMinimo');
+const intervaloMaximoInput = document.getElementById('intervaloMaximo');
+const erroIntervalos = document.getElementById('erroIntervalos');
 
 const statusPrincipal = document.getElementById('statusPrincipal');
 const subStatus = document.getElementById('subStatus');
@@ -27,6 +30,7 @@ let ativo = false;
 let emDesafio = false;
 let tempoMedioMinutos = null;
 let proximoDesafioEm = null;
+let faixaPersonalizada = null;
 
 const CONTAGEM_FINAL_SEGUNDOS = 2 * 60;
 
@@ -48,6 +52,17 @@ function atualizarPreviewFaixa() {
     return;
   }
 
+  const minimoDigitado = intervaloMinimoInput.value.trim();
+  const maximoDigitado = intervaloMaximoInput.value.trim();
+  if (minimoDigitado && maximoDigitado) {
+    const minimo = Math.floor(Number(minimoDigitado));
+    const maximo = Math.floor(Number(maximoDigitado));
+    if (Number.isFinite(minimo) && Number.isFinite(maximo) && minimo <= maximo) {
+      faixaPreview.textContent = `Faixa estimada: ${minimo} a ${maximo} minutos (intervalo personalizado).`;
+      return;
+    }
+  }
+
   const valor = Number(tempoMedioInput.value);
   if (!Number.isFinite(valor) || valor < MIN_MINUTOS_ABSOLUTO) {
     faixaPreview.textContent = `Faixa estimada: mínimo de ${MIN_MINUTOS_ABSOLUTO} minutos.`;
@@ -59,9 +74,76 @@ function atualizarPreviewFaixa() {
 }
 
 function sortearDuracaoMs() {
-  const { minimo, maximo } = obterFaixaSorteio();
+  const { minimo, maximo } = obterFaixaAtiva();
   const minutos = Math.floor(Math.random() * (maximo - minimo + 1)) + minimo;
   return minutos * 60 * 1000;
+}
+
+function obterFaixaAtiva() {
+  if (faixaPersonalizada) {
+    return faixaPersonalizada;
+  }
+
+  return obterFaixaSorteio();
+}
+
+function mostrarErroIntervalos(mensagem) {
+  erroIntervalos.textContent = mensagem;
+  erroIntervalos.classList.remove('hidden');
+}
+
+function limparErroIntervalos() {
+  erroIntervalos.textContent = '';
+  erroIntervalos.classList.add('hidden');
+}
+
+function atualizarResumoConfig() {
+  if (!tempoMedioMinutos) {
+    return;
+  }
+
+  const { minimo, maximo } = obterFaixaAtiva();
+  const modoFaixa = faixaPersonalizada
+    ? `intervalo personalizado de ${minimo} a ${maximo} min`
+    : `ciclos aleatórios entre ${minimo} e ${maximo} min`;
+  configResumo.textContent = `Tempo médio configurado: ${tempoMedioMinutos} min (${modoFaixa}).`;
+}
+
+function lerFaixaPersonalizada() {
+  const minimoDigitado = intervaloMinimoInput.value.trim();
+  const maximoDigitado = intervaloMaximoInput.value.trim();
+
+  if (!minimoDigitado && !maximoDigitado) {
+    return null;
+  }
+
+  if (!minimoDigitado || !maximoDigitado) {
+    mostrarErroIntervalos('Preencha mínimo e máximo para usar intervalo personalizado.');
+    return null;
+  }
+
+  const minimo = Math.floor(Number(minimoDigitado));
+  const maximo = Math.floor(Number(maximoDigitado));
+
+  if (!Number.isFinite(minimo) || !Number.isFinite(maximo)) {
+    mostrarErroIntervalos('O intervalo personalizado precisa conter apenas números válidos.');
+    return null;
+  }
+
+  if (minimo < MIN_MINUTOS_ABSOLUTO || maximo > MAX_MINUTOS_ABSOLUTO) {
+    mostrarErroIntervalos(
+      `O intervalo personalizado precisa ficar entre ${MIN_MINUTOS_ABSOLUTO} e ${MAX_MINUTOS_ABSOLUTO} minutos.`,
+    );
+    return null;
+  }
+
+  if (minimo > maximo) {
+    mostrarErroIntervalos('O intervalo mínimo não pode ser maior que o máximo.');
+    return null;
+  }
+
+  limparErroIntervalos();
+  return { minimo, maximo };
 }
 
 function limparTimer() {
@@ -205,6 +287,7 @@ function voltarParaConfiguracao() {
 
   atualizarPreviewFaixa();
   erroConfig.classList.add('hidden');
+  limparErroIntervalos();
   painelPrincipal.classList.add('hidden');
   telaInicial.classList.remove('hidden');
 }
@@ -221,9 +304,16 @@ function configurarTempoMedio(evento) {
   }
 
   tempoMedioMinutos = Math.floor(valor);
-  const { minimo, maximo } = obterFaixaSorteio();
+  const faixaLida = lerFaixaPersonalizada();
+  if (intervaloMinimoInput.value.trim() || intervaloMaximoInput.value.trim()) {
+    if (!faixaLida) {
+      return;
+    }
+  }
 
-  configResumo.textContent = `Tempo médio configurado: ${tempoMedioMinutos} min (ciclos aleatórios entre ${minimo} e ${maximo} min).`;
+  faixaPersonalizada = faixaLida;
+
+  atualizarResumoConfig();
   erroConfig.classList.add('hidden');
 
   telaInicial.classList.add('hidden');
@@ -234,6 +324,8 @@ function configurarTempoMedio(evento) {
 
 formConfig.addEventListener('submit', configurarTempoMedio);
 tempoMedioInput.addEventListener('input', atualizarPreviewFaixa);
+intervaloMinimoInput.addEventListener('input', atualizarPreviewFaixa);
+intervaloMaximoInput.addEventListener('input', atualizarPreviewFaixa);
 btnAtivar.addEventListener('click', ativar);
 btnPararContinuar.addEventListener('click', pararMusicaEContinuar);
 btnDesativar.addEventListener('click', desativar);
