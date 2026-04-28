@@ -44,6 +44,53 @@ h1 {
   gap: 0.8rem;
 }
 
+.intervalos-card {
+  margin: 0;
+  padding: 0.9rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  text-align: left;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.intervalo-inputs {
+  display: flex;
+  gap: 0.5rem;
+}
+
+#intervaloNovo {
+  flex: 1;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 0.8rem;
+  font-size: 1rem;
+}
+
+.intervalo-lista {
+  list-style: none;
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+}
+
+.intervalo-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.7rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 0.45rem 0.65rem;
+  background: #fff;
+}
+
+.intervalo-remover {
+  padding: 0.45rem 0.65rem;
+  font-size: 0.85rem;
+}
+
 .setup-label {
   font-weight: 600;
   color: #374151;
@@ -136,6 +183,12 @@ h1 {
   font-weight: 600;
   cursor: pointer;
   background: #fff;
+}
+
+@media (max-width: 420px) {
+  .intervalo-inputs {
+    flex-direction: column;
+  }
 }
 
 .btn:hover:enabled {

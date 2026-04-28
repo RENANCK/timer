@@ -8,6 +8,10 @@ const tempoMedioInput = document.getElementById('tempoMedio');
 const faixaPreview = document.getElementById('faixaPreview');
 const erroConfig = document.getElementById('erroConfig');
 const configResumo = document.getElementById('configResumo');
+const intervaloNovoInput = document.getElementById('intervaloNovo');
+const btnAdicionarIntervalo = document.getElementById('btnAdicionarIntervalo');
+const listaIntervalos = document.getElementById('listaIntervalos');
+const erroIntervalos = document.getElementById('erroIntervalos');
 
 const statusPrincipal = document.getElementById('statusPrincipal');
 const subStatus = document.getElementById('subStatus');
@@ -27,6 +31,7 @@ let ativo = false;
 let emDesafio = false;
 let tempoMedioMinutos = null;
 let proximoDesafioEm = null;
+let intervalosPersonalizados = [];
 
 const CONTAGEM_FINAL_SEGUNDOS = 2 * 60;
 
@@ -59,9 +64,108 @@ function atualizarPreviewFaixa() {
 }
 
 function sortearDuracaoMs() {
+  if (intervalosPersonalizados.length > 0) {
+    const indiceSorteado = Math.floor(Math.random() * intervalosPersonalizados.length);
+    const minutosPersonalizados = intervalosPersonalizados[indiceSorteado];
+    return minutosPersonalizados * 60 * 1000;
+  }
+
   const { minimo, maximo } = obterFaixaSorteio();
   const minutos = Math.floor(Math.random() * (maximo - minimo + 1)) + minimo;
   return minutos * 60 * 1000;
+}
+
+function mostrarErroIntervalos(mensagem) {
+  erroIntervalos.textContent = mensagem;
+  erroIntervalos.classList.remove('hidden');
+}
+
+function limparErroIntervalos() {
+  erroIntervalos.textContent = '';
+  erroIntervalos.classList.add('hidden');
+}
+
+function criarItemIntervalo(minutos) {
+  const item = document.createElement('li');
+  item.className = 'intervalo-item';
+
+  const texto = document.createElement('span');
+  texto.textContent = `${minutos} min`;
+
+  const botaoRemover = document.createElement('button');
+  botaoRemover.type = 'button';
+  botaoRemover.className = 'btn intervalo-remover';
+  botaoRemover.textContent = 'Remover';
+  botaoRemover.addEventListener('click', () => {
+    intervalosPersonalizados = intervalosPersonalizados.filter((valor) => valor !== minutos);
+    atualizarListaIntervalos();
+    atualizarResumoConfig();
+  });
+
+  item.append(texto, botaoRemover);
+  return item;
+}
+
+function atualizarListaIntervalos() {
+  listaIntervalos.innerHTML = '';
+
+  if (intervalosPersonalizados.length === 0) {
+    listaIntervalos.classList.add('hidden');
+    return;
+  }
+
+  const fragmento = document.createDocumentFragment();
+  intervalosPersonalizados.forEach((minutos) => {
+    fragmento.appendChild(criarItemIntervalo(minutos));
+  });
+
+  listaIntervalos.appendChild(fragmento);
+  listaIntervalos.classList.remove('hidden');
+}
+
+function atualizarResumoConfig() {
+  if (!tempoMedioMinutos) {
+    return;
+  }
+
+  const { minimo, maximo } = obterFaixaSorteio();
+
+  if (intervalosPersonalizados.length > 0) {
+    configResumo.textContent = `Tempo médio configurado: ${tempoMedioMinutos} min (intervalos fixos: ${intervalosPersonalizados.join(', ')} min).`;
+    return;
+  }
+
+  configResumo.textContent = `Tempo médio configurado: ${tempoMedioMinutos} min (ciclos aleatórios entre ${minimo} e ${maximo} min).`;
+}
+
+function adicionarIntervalo() {
+  const valor = Number(intervaloNovoInput.value);
+
+  if (!Number.isFinite(valor)) {
+    mostrarErroIntervalos('Informe um intervalo válido em minutos.');
+    return;
+  }
+
+  const valorNormalizado = Math.floor(valor);
+
+  if (valorNormalizado < MIN_MINUTOS_ABSOLUTO || valorNormalizado > MAX_MINUTOS_ABSOLUTO) {
+    mostrarErroIntervalos(
+      `O intervalo precisa estar entre ${MIN_MINUTOS_ABSOLUTO} e ${MAX_MINUTOS_ABSOLUTO} minutos.`,
+    );
+    return;
+  }
+
+  if (intervalosPersonalizados.includes(valorNormalizado)) {
+    mostrarErroIntervalos('Esse intervalo já foi adicionado.');
+    return;
+  }
+
+  intervalosPersonalizados.push(valorNormalizado);
+  intervalosPersonalizados.sort((a, b) => a - b);
+  intervaloNovoInput.value = '';
+  limparErroIntervalos();
+  atualizarListaIntervalos();
+  atualizarResumoConfig();
 }
 
 function limparTimer() {
@@ -205,6 +309,7 @@ function voltarParaConfiguracao() {
 
   atualizarPreviewFaixa();
   erroConfig.classList.add('hidden');
+  limparErroIntervalos();
   painelPrincipal.classList.add('hidden');
   telaInicial.classList.remove('hidden');
 }
@@ -221,9 +326,7 @@ function configurarTempoMedio(evento) {
   }
 
   tempoMedioMinutos = Math.floor(valor);
-  const { minimo, maximo } = obterFaixaSorteio();
-
-  configResumo.textContent = `Tempo médio configurado: ${tempoMedioMinutos} min (ciclos aleatórios entre ${minimo} e ${maximo} min).`;
+  atualizarResumoConfig();
   erroConfig.classList.add('hidden');
 
   telaInicial.classList.add('hidden');
@@ -234,6 +337,7 @@ function configurarTempoMedio(evento) {
 
 formConfig.addEventListener('submit', configurarTempoMedio);
 tempoMedioInput.addEventListener('input', atualizarPreviewFaixa);
+btnAdicionarIntervalo.addEventListener('click', adicionarIntervalo);
 btnAtivar.addEventListener('click', ativar);
 btnPararContinuar.addEventListener('click', pararMusicaEContinuar);
 btnDesativar.addEventListener('click', desativar);

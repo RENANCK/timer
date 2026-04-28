@@ -16,6 +16,29 @@
           <label for="tempoMedio" class="setup-label">Tempo médio (mínimo: 4 min | máximo da faixa: 60 min)</label>
           <input id="tempoMedio" type="number" min="4" step="1" value="10" required />
           <p id="faixaPreview" class="setup-text">Faixa estimada: 4 a 16 minutos.</p>
+
+          <fieldset class="intervalos-card">
+            <legend class="setup-label">Intervalos personalizados (opcional)</legend>
+            <p class="setup-text">
+              Adicione intervalos fixos em minutos. Se houver intervalos cadastrados, o timer sorteia apenas
+              entre eles.
+            </p>
+            <div class="intervalo-inputs">
+              <input
+                id="intervaloNovo"
+                type="number"
+                min="4"
+                max="60"
+                step="1"
+                placeholder="Ex.: 7"
+                aria-label="Novo intervalo em minutos"
+              />
+              <button id="btnAdicionarIntervalo" class="btn" type="button">Adicionar intervalo</button>
+            </div>
+            <p id="erroIntervalos" class="erro hidden" role="alert"></p>
+            <ul id="listaIntervalos" class="intervalo-lista hidden" aria-live="polite"></ul>
+          </fieldset>
+
           <p id="erroConfig" class="erro hidden" role="alert"></p>
           <button class="btn btn-primary" type="submit">Começar</button>
         </form>
