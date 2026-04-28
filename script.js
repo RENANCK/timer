@@ -16,6 +16,7 @@ const alertaDesafio = document.getElementById('alertaDesafio');
 const btnAtivar = document.getElementById('btnAtivar');
 const btnPararContinuar = document.getElementById('btnPararContinuar');
 const btnDesativar = document.getElementById('btnDesativar');
+const btnReconfigurar = document.getElementById('btnReconfigurar');
 
 const alarme = document.getElementById('alarme');
 alarme.loop = true;
@@ -195,6 +196,19 @@ function desativar() {
   btnPararContinuar.disabled = true;
 }
 
+function voltarParaConfiguracao() {
+  desativar();
+
+  if (tempoMedioMinutos) {
+    tempoMedioInput.value = tempoMedioMinutos;
+  }
+
+  atualizarPreviewFaixa();
+  erroConfig.classList.add('hidden');
+  painelPrincipal.classList.add('hidden');
+  telaInicial.classList.remove('hidden');
+}
+
 function configurarTempoMedio(evento) {
   evento.preventDefault();
 
@@ -223,6 +237,7 @@ tempoMedioInput.addEventListener('input', atualizarPreviewFaixa);
 btnAtivar.addEventListener('click', ativar);
 btnPararContinuar.addEventListener('click', pararMusicaEContinuar);
 btnDesativar.addEventListener('click', desativar);
+btnReconfigurar.addEventListener('click', voltarParaConfiguracao);
 
 atualizarPreviewFaixa();
 
