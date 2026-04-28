@@ -8,6 +8,9 @@ const tempoMedioInput = document.getElementById('tempoMedio');
 const faixaPreview = document.getElementById('faixaPreview');
 const erroConfig = document.getElementById('erroConfig');
 const configResumo = document.getElementById('configResumo');
+const tempoMedioManualInput = document.getElementById('tempoMedioManual');
+const btnAplicarTempoManual = document.getElementById('btnAplicarTempoManual');
+const erroTempoManual = document.getElementById('erroTempoManual');
 const intervaloNovoInput = document.getElementById('intervaloNovo');
 const btnAdicionarIntervalo = document.getElementById('btnAdicionarIntervalo');
 const listaIntervalos = document.getElementById('listaIntervalos');
@@ -91,6 +94,16 @@ function mostrarErroIntervalos(mensagem) {
 function limparErroIntervalos() {
   erroIntervalos.textContent = '';
   erroIntervalos.classList.add('hidden');
+}
+
+function mostrarErroTempoManual(mensagem) {
+  erroTempoManual.textContent = mensagem;
+  erroTempoManual.classList.remove('hidden');
+}
+
+function limparErroTempoManual() {
+  erroTempoManual.textContent = '';
+  erroTempoManual.classList.add('hidden');
 }
 
 function criarItemIntervalo(minutos) {
@@ -342,6 +355,7 @@ function configurarTempoMedio(evento) {
   }
 
   tempoMedioMinutos = Math.floor(valor);
+  tempoMedioManualInput.value = tempoMedioMinutos;
   atualizarResumoConfig();
   erroConfig.classList.add('hidden');
 
@@ -349,6 +363,26 @@ function configurarTempoMedio(evento) {
   painelPrincipal.classList.remove('hidden');
 
   desativar();
+}
+
+function aplicarTempoManual() {
+  const valor = Number(tempoMedioManualInput.value);
+
+  if (!Number.isFinite(valor) || valor < MIN_MINUTOS_ABSOLUTO || valor > MAX_MINUTOS_ABSOLUTO) {
+    mostrarErroTempoManual(
+      `Informe um tempo médio entre ${MIN_MINUTOS_ABSOLUTO} e ${MAX_MINUTOS_ABSOLUTO} minutos.`,
+    );
+    return;
+  }
+
+  tempoMedioMinutos = Math.floor(valor);
+  tempoMedioInput.value = tempoMedioMinutos;
+  limparErroTempoManual();
+  atualizarResumoConfig();
+
+  if (ativo && !emDesafio) {
+    iniciarCicloOculto();
+  }
 }
 
 formConfig.addEventListener('submit', configurarTempoMedio);
@@ -366,6 +400,15 @@ btnAtivar.addEventListener('click', ativar);
 btnPararContinuar.addEventListener('click', pararMusicaEContinuar);
 btnDesativar.addEventListener('click', desativar);
 btnReconfigurar.addEventListener('click', voltarParaConfiguracao);
+btnAplicarTempoManual.addEventListener('click', aplicarTempoManual);
+tempoMedioManualInput.addEventListener('keydown', (evento) => {
+  if (evento.key !== 'Enter') {
+    return;
+  }
+
+  evento.preventDefault();
+  aplicarTempoManual();
+});
 
 atualizarPreviewFaixa();
 atualizarEstadoBotoes();
