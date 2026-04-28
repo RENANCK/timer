@@ -3,15 +3,32 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Repositório Básico</title>
+    <title>Hiperfoco em Medicina</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <main class="container">
-      <h1>Repositório Básico</h1>
-      <p>Estrutura inicial pronta para começar seu projeto.</p>
-      <button id="helloBtn">Clique aqui</button>
-      <p id="message" aria-live="polite"></p>
+    <main class="app" aria-live="polite">
+      <h1>Hiperfoco em Medicina</h1>
+
+      <section class="status-card">
+        <p class="label">Status</p>
+        <p id="statusPrincipal" class="status-value status-off">Desligado</p>
+        <p id="subStatus" class="substatus">Cronômetro desligado.</p>
+      </section>
+
+      <section id="alertaDesafio" class="alerta hidden" role="alert">
+        <p>Abra o outro app e faça o ciclo.</p>
+      </section>
+
+      <section class="actions">
+        <button id="btnAtivar" class="btn btn-primary" type="button">Ativar</button>
+        <button id="btnPararContinuar" class="btn" type="button" disabled>
+          Parar música e continuar
+        </button>
+        <button id="btnDesativar" class="btn btn-danger" type="button">Desativar</button>
+      </section>
+
+      <audio id="alarme" src="assets/alarme.mp3" preload="auto"></audio>
     </main>
 
     <script src="script.js"></script>

@@ -1,6 +1,10 @@
 :root {
-  color-scheme: light dark;
   font-family: Arial, Helvetica, sans-serif;
+  color: #111827;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
@@ -8,27 +12,106 @@ body {
   min-height: 100vh;
   display: grid;
   place-items: center;
-  background: #f5f5f5;
+  background: #ffffff;
 }
 
-.container {
-  text-align: center;
+.app {
+  width: min(92vw, 560px);
   padding: 2rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.06);
+}
+
+h1 {
+  margin: 0 0 1.5rem;
+  font-size: clamp(1.4rem, 2vw, 2rem);
+}
+
+.status-card {
+  padding: 1rem;
   border-radius: 12px;
-  background: white;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
 }
 
-button {
-  border: 0;
-  border-radius: 8px;
-  padding: 0.7rem 1rem;
-  cursor: pointer;
-  background: #2d6cdf;
-  color: #fff;
+.label {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #6b7280;
 }
 
-#message {
+.status-value {
+  margin: 0.5rem 0;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.status-off {
+  color: #4b5563;
+}
+
+.status-on {
+  color: #2563eb;
+}
+
+.status-challenge {
+  color: #b45309;
+}
+
+.substatus {
+  margin: 0;
+  color: #374151;
+}
+
+.alerta {
   margin-top: 1rem;
+  padding: 0.9rem;
+  border-radius: 10px;
+  background: #fffbeb;
+  border: 1px solid #f59e0b;
+  color: #92400e;
   font-weight: 600;
+}
+
+.hidden {
+  display: none;
+}
+
+.actions {
+  margin-top: 1.5rem;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.btn {
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  padding: 0.95rem 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: #fff;
+}
+
+.btn:hover:enabled {
+  filter: brightness(0.97);
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-primary {
+  background: #2563eb;
+  color: #fff;
+  border-color: #2563eb;
+}
+
+.btn-danger {
+  background: #dc2626;
+  color: #fff;
+  border-color: #dc2626;
 }
