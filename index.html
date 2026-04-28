@@ -54,6 +54,23 @@
           <p id="configResumo" class="setup-resumo"></p>
         </section>
 
+        <section class="ajuste-card">
+          <p class="label">Ajuste manual</p>
+          <div class="ajuste-inputs">
+            <input
+              id="tempoMedioManual"
+              type="number"
+              min="4"
+              max="60"
+              step="1"
+              placeholder="Tempo médio (min)"
+              aria-label="Ajustar tempo médio manualmente"
+            />
+            <button id="btnAplicarTempoManual" class="btn" type="button">Aplicar tempo</button>
+          </div>
+          <p id="erroTempoManual" class="erro hidden" role="alert"></p>
+        </section>
+
         <section id="alertaDesafio" class="alerta hidden" role="alert">
           <p>Abra o outro app e faça o ciclo.</p>
         </section>
