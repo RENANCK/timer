@@ -5,8 +5,10 @@ Aplicativo estático em HTML/CSS/JS com cronômetro oculto para estímulos aleat
 ## Funcionalidades
 
 - Tela inicial para definir o **tempo médio** antes de começar.
+- Campo opcional para adicionar **intervalos personalizados** fixos (em minutos).
 - Validação do tempo médio com limite mínimo de **4 minutos**.
 - Ciclos aleatórios ocultos calculados a partir do tempo médio.
+- Quando há intervalos personalizados, o sorteio usa apenas os intervalos cadastrados.
 - Exibição apenas de mensagens de status (sem revelar o tempo sorteado do ciclo atual).
 - Alarme em loop ao final do ciclo usando `assets/alarme.m4a`.
 - Botão **Parar música e continuar** para iniciar novo ciclo oculto.
