@@ -13,9 +13,9 @@
         <p class="setup-text">Defina o tempo médio em minutos para iniciar o cronômetro.</p>
 
         <form id="formConfig" class="setup-form">
-          <label for="tempoMedio" class="setup-label">Tempo médio (mínimo: 4 min | máximo da faixa: 60 min)</label>
-          <input id="tempoMedio" type="number" min="4" step="1" value="10" required />
-          <p id="faixaPreview" class="setup-text">Faixa estimada: 4 a 16 minutos.</p>
+          <label for="tempoMedio" class="setup-label">Tempo médio (mínimo: 5 min | máximo da faixa: 30 min)</label>
+          <input id="tempoMedio" type="number" min="5" max="30" step="1" value="10" required />
+          <p id="faixaPreview" class="setup-text">Faixa estimada: 5 a 15 minutos.</p>
 
           <fieldset class="intervalos-card">
             <legend class="setup-label">Intervalos personalizados (opcional)</legend>
@@ -27,8 +27,8 @@
               <input
                 id="intervaloNovo"
                 type="number"
-                min="4"
-                max="60"
+                min="5"
+                max="30"
                 step="1"
                 placeholder="Ex.: 7"
                 aria-label="Novo intervalo em minutos"
@@ -60,8 +60,8 @@
             <input
               id="tempoMedioManual"
               type="number"
-              min="4"
-              max="60"
+              min="5"
+              max="30"
               step="1"
               placeholder="Tempo médio (min)"
               aria-label="Ajustar tempo médio manualmente"
