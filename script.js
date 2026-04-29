@@ -1,5 +1,5 @@
-const MIN_MINUTOS_ABSOLUTO = 4;
-const MAX_MINUTOS_ABSOLUTO = 26;
+const MIN_MINUTOS_ABSOLUTO = 5;
+const MAX_MINUTOS_ABSOLUTO = 30;
 
 const telaInicial = document.getElementById('telaInicial');
 const painelPrincipal = document.getElementById('painelPrincipal');
