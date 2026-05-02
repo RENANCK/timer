@@ -1,6 +1,20 @@
 const MIN_MINUTOS_ABSOLUTO = 5;
 const MAX_MINUTOS_ABSOLUTO = 30;
 
+const MIN_FOCO_POMODORO = 8;
+const MAX_FOCO_POMODORO = 35;
+const MIN_DESCANSO_POMODORO = 4;
+const MAX_DESCANSO_POMODORO = 25;
+
+const telaModo = document.getElementById('telaModo');
+const btnModoConvencional = document.getElementById('btnModoConvencional');
+const btnModoPomodoro = document.getElementById('btnModoPomodoro');
+const pomodoroPainel = document.getElementById('pomodoroPainel');
+const descansoTempo = document.getElementById('descansoTempo');
+
+let modoAtual = null;
+let descansoFimEm = null;
+
 const telaInicial = document.getElementById('telaInicial');
 const painelPrincipal = document.getElementById('painelPrincipal');
 const formConfig = document.getElementById('formConfig');
@@ -67,6 +81,11 @@ function atualizarPreviewFaixa() {
 }
 
 function sortearDuracaoMs() {
+  if (modoAtual === 'pomodoro') {
+    const minutosFoco = Math.floor(Math.random() * (MAX_FOCO_POMODORO - MIN_FOCO_POMODORO + 1)) + MIN_FOCO_POMODORO;
+    return minutosFoco * 60 * 1000;
+  }
+
   if (intervalosPersonalizados.length > 0) {
     const indiceSorteado = Math.floor(Math.random() * intervalosPersonalizados.length);
     const minutosPersonalizados = intervalosPersonalizados[indiceSorteado];
@@ -205,6 +224,7 @@ function limparContagem() {
   }
 
   proximoDesafioEm = null;
+  descansoFimEm = null;
 }
 
 function formatarSegundosEmMinutos(segundosTotais) {
@@ -231,6 +251,10 @@ function atualizarContagemRegressivaFinal() {
     return;
   }
 
+  if (modoAtual === 'pomodoro') {
+    atualizarCronometroDescanso();
+  }
+
   if (restanteSegundos <= CONTAGEM_FINAL_SEGUNDOS) {
     subStatus.textContent = `Faltam ${formatarSegundosEmMinutos(restanteSegundos)} para o próximo estímulo.`;
     return;
@@ -250,6 +274,22 @@ function atualizarEstadoBotoes() {
   btnPararContinuar.disabled = !(ativo && emDesafio);
 }
 
+
+function sortearDescansoPomodoroMs() {
+  const minutosDescanso = Math.floor(Math.random() * (MAX_DESCANSO_POMODORO - MIN_DESCANSO_POMODORO + 1)) + MIN_DESCANSO_POMODORO;
+  return minutosDescanso * 60 * 1000;
+}
+
+function atualizarCronometroDescanso() {
+  if (modoAtual !== 'pomodoro' || !descansoFimEm || !descansoTempo) {
+    return;
+  }
+
+  const restanteMs = descansoFimEm - Date.now();
+  const restanteSegundos = Math.max(0, Math.ceil(restanteMs / 1000));
+  descansoTempo.textContent = formatarSegundosEmMinutos(restanteSegundos);
+}
+
 function iniciarCicloOculto() {
   if (!ativo || emDesafio) {
     return;
@@ -265,6 +305,12 @@ function iniciarCicloOculto() {
 
   const duracaoMs = sortearDuracaoMs();
   proximoDesafioEm = Date.now() + duracaoMs;
+
+  if (modoAtual === 'pomodoro') {
+    const descansoMs = sortearDescansoPomodoroMs();
+    descansoFimEm = Date.now() + descansoMs;
+    atualizarCronometroDescanso();
+  }
   timerId = setTimeout(dispararDesafio, duracaoMs);
   atualizarContagemRegressivaFinal();
   countdownId = setInterval(atualizarContagemRegressivaFinal, 1000);
@@ -336,11 +382,11 @@ function voltarParaConfiguracao() {
     tempoMedioInput.value = tempoMedioMinutos;
   }
 
-  atualizarPreviewFaixa();
   erroConfig.classList.add('hidden');
   limparErroIntervalos();
   painelPrincipal.classList.add('hidden');
-  telaInicial.classList.remove('hidden');
+  telaInicial.classList.add('hidden');
+  telaModo.classList.remove('hidden');
 }
 
 function configurarTempoMedio(evento) {
@@ -385,6 +431,26 @@ function aplicarTempoManual() {
   }
 }
 
+
+
+function abrirModoConvencional() {
+  modoAtual = 'convencional';
+  pomodoroPainel.classList.add('hidden');
+  telaModo.classList.add('hidden');
+  telaInicial.classList.remove('hidden');
+}
+
+function abrirModoPomodoro() {
+  modoAtual = 'pomodoro';
+  telaModo.classList.add('hidden');
+  telaInicial.classList.add('hidden');
+  painelPrincipal.classList.remove('hidden');
+  pomodoroPainel.classList.remove('hidden');
+  tempoMedioMinutos = 20;
+  atualizarResumoConfig();
+  desativar();
+}
+
 formConfig.addEventListener('submit', configurarTempoMedio);
 tempoMedioInput.addEventListener('input', atualizarPreviewFaixa);
 btnAdicionarIntervalo.addEventListener('click', adicionarIntervalo);
@@ -409,6 +475,9 @@ tempoMedioManualInput.addEventListener('keydown', (evento) => {
   evento.preventDefault();
   aplicarTempoManual();
 });
+
+btnModoConvencional.addEventListener('click', abrirModoConvencional);
+btnModoPomodoro.addEventListener('click', abrirModoPomodoro);
 
 atualizarPreviewFaixa();
 atualizarEstadoBotoes();
