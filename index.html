@@ -13,9 +13,32 @@
         <p class="setup-text">Defina o tempo médio em minutos para iniciar o cronômetro.</p>
 
         <form id="formConfig" class="setup-form">
-          <label for="tempoMedio" class="setup-label">Tempo médio (mínimo: 4 min | máximo da faixa: 60 min)</label>
-          <input id="tempoMedio" type="number" min="4" step="1" value="10" required />
-          <p id="faixaPreview" class="setup-text">Faixa estimada: 4 a 16 minutos.</p>
+          <label for="tempoMedio" class="setup-label">Tempo médio (mínimo: 5 min | máximo da faixa: 30 min)</label>
+          <input id="tempoMedio" type="number" min="5" max="30" step="1" value="10" required />
+          <p id="faixaPreview" class="setup-text">Faixa estimada: 5 a 15 minutos.</p>
+
+          <fieldset class="intervalos-card">
+            <legend class="setup-label">Intervalos personalizados (opcional)</legend>
+            <p class="setup-text">
+              Adicione intervalos fixos em minutos. Se houver intervalos cadastrados, o timer sorteia apenas
+              entre eles.
+            </p>
+            <div class="intervalo-inputs">
+              <input
+                id="intervaloNovo"
+                type="number"
+                min="5"
+                max="30"
+                step="1"
+                placeholder="Ex.: 7"
+                aria-label="Novo intervalo em minutos"
+              />
+              <button id="btnAdicionarIntervalo" class="btn" type="button">Adicionar intervalo</button>
+            </div>
+            <p id="erroIntervalos" class="erro hidden" role="alert"></p>
+            <ul id="listaIntervalos" class="intervalo-lista hidden" aria-live="polite"></ul>
+          </fieldset>
+
           <p id="erroConfig" class="erro hidden" role="alert"></p>
           <button class="btn btn-primary" type="submit">Começar</button>
         </form>
@@ -31,11 +54,29 @@
           <p id="configResumo" class="setup-resumo"></p>
         </section>
 
+        <section class="ajuste-card">
+          <p class="label">Ajuste manual</p>
+          <div class="ajuste-inputs">
+            <input
+              id="tempoMedioManual"
+              type="number"
+              min="5"
+              max="30"
+              step="1"
+              placeholder="Tempo médio (min)"
+              aria-label="Ajustar tempo médio manualmente"
+            />
+            <button id="btnAplicarTempoManual" class="btn" type="button">Aplicar tempo</button>
+          </div>
+          <p id="erroTempoManual" class="erro hidden" role="alert"></p>
+        </section>
+
         <section id="alertaDesafio" class="alerta hidden" role="alert">
           <p>Abra o outro app e faça o ciclo.</p>
         </section>
 
         <section class="actions">
+          <button id="btnReconfigurar" class="btn" type="button">Regular tempo médio</button>
           <button id="btnAtivar" class="btn btn-primary" type="button">Ativar</button>
           <button id="btnPararContinuar" class="btn" type="button" disabled>
             Parar música e continuar

@@ -1,5 +1,5 @@
-const MIN_MINUTOS_ABSOLUTO = 4;
-const MAX_MINUTOS_ABSOLUTO = 60;
+const MIN_MINUTOS_ABSOLUTO = 5;
+const MAX_MINUTOS_ABSOLUTO = 30;
 
 const telaInicial = document.getElementById('telaInicial');
 const painelPrincipal = document.getElementById('painelPrincipal');
@@ -8,6 +8,13 @@ const tempoMedioInput = document.getElementById('tempoMedio');
 const faixaPreview = document.getElementById('faixaPreview');
 const erroConfig = document.getElementById('erroConfig');
 const configResumo = document.getElementById('configResumo');
+const tempoMedioManualInput = document.getElementById('tempoMedioManual');
+const btnAplicarTempoManual = document.getElementById('btnAplicarTempoManual');
+const erroTempoManual = document.getElementById('erroTempoManual');
+const intervaloNovoInput = document.getElementById('intervaloNovo');
+const btnAdicionarIntervalo = document.getElementById('btnAdicionarIntervalo');
+const listaIntervalos = document.getElementById('listaIntervalos');
+const erroIntervalos = document.getElementById('erroIntervalos');
 
 const statusPrincipal = document.getElementById('statusPrincipal');
 const subStatus = document.getElementById('subStatus');
@@ -16,6 +23,7 @@ const alertaDesafio = document.getElementById('alertaDesafio');
 const btnAtivar = document.getElementById('btnAtivar');
 const btnPararContinuar = document.getElementById('btnPararContinuar');
 const btnDesativar = document.getElementById('btnDesativar');
+const btnReconfigurar = document.getElementById('btnReconfigurar');
 
 const alarme = document.getElementById('alarme');
 alarme.loop = true;
@@ -26,6 +34,7 @@ let ativo = false;
 let emDesafio = false;
 let tempoMedioMinutos = null;
 let proximoDesafioEm = null;
+let intervalosPersonalizados = [];
 
 const CONTAGEM_FINAL_SEGUNDOS = 2 * 60;
 
@@ -58,20 +67,139 @@ function atualizarPreviewFaixa() {
 }
 
 function sortearDuracaoMs() {
+  if (intervalosPersonalizados.length > 0) {
+    const indiceSorteado = Math.floor(Math.random() * intervalosPersonalizados.length);
+    const minutosPersonalizados = intervalosPersonalizados[indiceSorteado];
+    return minutosPersonalizados * 60 * 1000;
+  }
+
   const { minimo, maximo } = obterFaixaSorteio();
   const minutos = Math.floor(Math.random() * (maximo - minimo + 1)) + minimo;
   return minutos * 60 * 1000;
 }
 
+function normalizarValorMinutos(valor) {
+  if (!Number.isFinite(valor)) {
+    return null;
+  }
+
+  return Math.floor(valor);
+}
+
+function mostrarErroIntervalos(mensagem) {
+  erroIntervalos.textContent = mensagem;
+  erroIntervalos.classList.remove('hidden');
+}
+
+function limparErroIntervalos() {
+  erroIntervalos.textContent = '';
+  erroIntervalos.classList.add('hidden');
+}
+
+function mostrarErroTempoManual(mensagem) {
+  erroTempoManual.textContent = mensagem;
+  erroTempoManual.classList.remove('hidden');
+}
+
+function limparErroTempoManual() {
+  erroTempoManual.textContent = '';
+  erroTempoManual.classList.add('hidden');
+}
+
+function criarItemIntervalo(minutos) {
+  const item = document.createElement('li');
+  item.className = 'intervalo-item';
+
+  const texto = document.createElement('span');
+  texto.textContent = `${minutos} min`;
+
+  const botaoRemover = document.createElement('button');
+  botaoRemover.type = 'button';
+  botaoRemover.className = 'btn intervalo-remover';
+  botaoRemover.textContent = 'Remover';
+  botaoRemover.addEventListener('click', () => {
+    const indice = intervalosPersonalizados.indexOf(minutos);
+    if (indice !== -1) {
+      intervalosPersonalizados.splice(indice, 1);
+    }
+    atualizarListaIntervalos();
+    atualizarResumoConfig();
+  });
+
+  item.append(texto, botaoRemover);
+  return item;
+}
+
+function atualizarListaIntervalos() {
+  listaIntervalos.innerHTML = '';
+
+  if (intervalosPersonalizados.length === 0) {
+    listaIntervalos.classList.add('hidden');
+    return;
+  }
+
+  const fragmento = document.createDocumentFragment();
+  intervalosPersonalizados.forEach((minutos) => {
+    fragmento.appendChild(criarItemIntervalo(minutos));
+  });
+
+  listaIntervalos.appendChild(fragmento);
+  listaIntervalos.classList.remove('hidden');
+}
+
+function atualizarResumoConfig() {
+  if (!tempoMedioMinutos) {
+    return;
+  }
+
+  const { minimo, maximo } = obterFaixaSorteio();
+
+  if (intervalosPersonalizados.length > 0) {
+    configResumo.textContent = `Tempo médio configurado: ${tempoMedioMinutos} min (intervalos fixos: ${intervalosPersonalizados.join(', ')} min).`;
+    return;
+  }
+
+  configResumo.textContent = `Tempo médio configurado: ${tempoMedioMinutos} min (ciclos aleatórios entre ${minimo} e ${maximo} min).`;
+}
+
+function adicionarIntervalo() {
+  const valor = Number(intervaloNovoInput.value);
+  const valorNormalizado = normalizarValorMinutos(valor);
+
+  if (valorNormalizado === null) {
+    mostrarErroIntervalos('Informe um intervalo válido em minutos.');
+    return;
+  }
+
+  if (valorNormalizado < MIN_MINUTOS_ABSOLUTO || valorNormalizado > MAX_MINUTOS_ABSOLUTO) {
+    mostrarErroIntervalos(
+      `O intervalo precisa estar entre ${MIN_MINUTOS_ABSOLUTO} e ${MAX_MINUTOS_ABSOLUTO} minutos.`,
+    );
+    return;
+  }
+
+  if (intervalosPersonalizados.includes(valorNormalizado)) {
+    mostrarErroIntervalos('Esse intervalo já foi adicionado.');
+    return;
+  }
+
+  intervalosPersonalizados.push(valorNormalizado);
+  intervalosPersonalizados.sort((a, b) => a - b);
+  intervaloNovoInput.value = '';
+  limparErroIntervalos();
+  atualizarListaIntervalos();
+  atualizarResumoConfig();
+}
+
 function limparTimer() {
-  if (timerId) {
+  if (timerId !== null) {
     clearTimeout(timerId);
     timerId = null;
   }
 }
 
 function limparContagem() {
-  if (countdownId) {
+  if (countdownId !== null) {
     clearInterval(countdownId);
     countdownId = null;
   }
@@ -117,6 +245,11 @@ function atualizarStatusPrincipal(texto, classe) {
   statusPrincipal.classList.add(classe);
 }
 
+function atualizarEstadoBotoes() {
+  btnAtivar.disabled = ativo;
+  btnPararContinuar.disabled = !(ativo && emDesafio);
+}
+
 function iniciarCicloOculto() {
   if (!ativo || emDesafio) {
     return;
@@ -128,7 +261,7 @@ function iniciarCicloOculto() {
   atualizarStatusPrincipal('Ativo', 'status-on');
   subStatus.textContent = 'Próximo estímulo: surpresa.';
   alertaDesafio.classList.add('hidden');
-  btnPararContinuar.disabled = true;
+  atualizarEstadoBotoes();
 
   const duracaoMs = sortearDuracaoMs();
   proximoDesafioEm = Date.now() + duracaoMs;
@@ -147,7 +280,7 @@ async function dispararDesafio() {
   atualizarStatusPrincipal('Desafio!', 'status-challenge');
   subStatus.textContent = 'Abra o outro app e faça o ciclo.';
   alertaDesafio.classList.remove('hidden');
-  btnPararContinuar.disabled = false;
+  atualizarEstadoBotoes();
 
   try {
     alarme.currentTime = 0;
@@ -159,12 +292,13 @@ async function dispararDesafio() {
 }
 
 function ativar() {
-  if (!tempoMedioMinutos || (ativo && !emDesafio)) {
+  if (!tempoMedioMinutos || ativo) {
     return;
   }
 
   ativo = true;
   emDesafio = false;
+  atualizarEstadoBotoes();
   iniciarCicloOculto();
 }
 
@@ -192,7 +326,21 @@ function desativar() {
   atualizarStatusPrincipal('Desligado', 'status-off');
   subStatus.textContent = 'Cronômetro desligado.';
   alertaDesafio.classList.add('hidden');
-  btnPararContinuar.disabled = true;
+  atualizarEstadoBotoes();
+}
+
+function voltarParaConfiguracao() {
+  desativar();
+
+  if (tempoMedioMinutos) {
+    tempoMedioInput.value = tempoMedioMinutos;
+  }
+
+  atualizarPreviewFaixa();
+  erroConfig.classList.add('hidden');
+  limparErroIntervalos();
+  painelPrincipal.classList.add('hidden');
+  telaInicial.classList.remove('hidden');
 }
 
 function configurarTempoMedio(evento) {
@@ -200,16 +348,15 @@ function configurarTempoMedio(evento) {
 
   const valor = Number(tempoMedioInput.value);
 
-  if (!Number.isFinite(valor) || valor < MIN_MINUTOS_ABSOLUTO) {
-    erroConfig.textContent = `O tempo médio precisa ser de pelo menos ${MIN_MINUTOS_ABSOLUTO} minutos.`;
+  if (!Number.isFinite(valor) || valor < MIN_MINUTOS_ABSOLUTO || valor > MAX_MINUTOS_ABSOLUTO) {
+    erroConfig.textContent = `O tempo médio precisa estar entre ${MIN_MINUTOS_ABSOLUTO} e ${MAX_MINUTOS_ABSOLUTO} minutos.`;
     erroConfig.classList.remove('hidden');
     return;
   }
 
   tempoMedioMinutos = Math.floor(valor);
-  const { minimo, maximo } = obterFaixaSorteio();
-
-  configResumo.textContent = `Tempo médio configurado: ${tempoMedioMinutos} min (ciclos aleatórios entre ${minimo} e ${maximo} min).`;
+  tempoMedioManualInput.value = tempoMedioMinutos;
+  atualizarResumoConfig();
   erroConfig.classList.add('hidden');
 
   telaInicial.classList.add('hidden');
@@ -218,13 +365,53 @@ function configurarTempoMedio(evento) {
   desativar();
 }
 
+function aplicarTempoManual() {
+  const valor = Number(tempoMedioManualInput.value);
+
+  if (!Number.isFinite(valor) || valor < MIN_MINUTOS_ABSOLUTO || valor > MAX_MINUTOS_ABSOLUTO) {
+    mostrarErroTempoManual(
+      `Informe um tempo médio entre ${MIN_MINUTOS_ABSOLUTO} e ${MAX_MINUTOS_ABSOLUTO} minutos.`,
+    );
+    return;
+  }
+
+  tempoMedioMinutos = Math.floor(valor);
+  tempoMedioInput.value = tempoMedioMinutos;
+  limparErroTempoManual();
+  atualizarResumoConfig();
+
+  if (ativo && !emDesafio) {
+    iniciarCicloOculto();
+  }
+}
+
 formConfig.addEventListener('submit', configurarTempoMedio);
 tempoMedioInput.addEventListener('input', atualizarPreviewFaixa);
+btnAdicionarIntervalo.addEventListener('click', adicionarIntervalo);
+intervaloNovoInput.addEventListener('keydown', (evento) => {
+  if (evento.key !== 'Enter') {
+    return;
+  }
+
+  evento.preventDefault();
+  adicionarIntervalo();
+});
 btnAtivar.addEventListener('click', ativar);
 btnPararContinuar.addEventListener('click', pararMusicaEContinuar);
 btnDesativar.addEventListener('click', desativar);
+btnReconfigurar.addEventListener('click', voltarParaConfiguracao);
+btnAplicarTempoManual.addEventListener('click', aplicarTempoManual);
+tempoMedioManualInput.addEventListener('keydown', (evento) => {
+  if (evento.key !== 'Enter') {
+    return;
+  }
+
+  evento.preventDefault();
+  aplicarTempoManual();
+});
 
 atualizarPreviewFaixa();
+atualizarEstadoBotoes();
 
 window.addEventListener('beforeunload', () => {
   limparTimer();
