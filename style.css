@@ -239,3 +239,19 @@ h1 {
   color: #fff;
   border-color: #dc2626;
 }
+
+.pomodoro-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+.descanso-card {
+  border-color: #60a5fa;
+  background: #eff6ff;
+}
+
+.descanso-status {
+  color: #2563eb;
+}
